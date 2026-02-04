@@ -1,0 +1,226 @@
+# =============================================================================
+# Day 2 - Module 4 - KQL Queries for Workspace Monitoring
+# =============================================================================
+# This file contains all KQL queries from Module 4 exercises.
+# These queries are designed to run in a Fabric KQL Queryset connected to
+# the Workspace Monitoring lakehouse.
+# 
+# NOTE: This is a reference file - copy queries to your KQL Queryset in Fabric
+
+# -----------------------------------------------------------------------------
+# Exercise 4.2: Test Query - Verify Data Availability
+# -----------------------------------------------------------------------------
+# After enabling workspace monitoring, run this to verify data is being collected
+
+// Test query - check data availability
+queries
+| take 10
+
+# -----------------------------------------------------------------------------
+# Exercise 4.3.1: Basic Performance Overview
+# -----------------------------------------------------------------------------
+# Get a quick performance summary for the last 24 hours
+
+// Performance summary for last 24 hours
+queries
+| where timestamp > ago(24h)
+| summarize 
+    TotalQueries = count(),
+    AvgDurationMs = round(avg(DurationMs), 0),
+    P90Duration = round(percentile(DurationMs, 90), 0),
+    MaxDuration = max(DurationMs),
+    UniqueUsers = dcount(ExecutingUser)
+
+# -----------------------------------------------------------------------------
+# Exercise 4.3.2: Find Slow Queries
+# -----------------------------------------------------------------------------
+# Identify queries slower than 5 seconds
+
+// Slow queries (>5 seconds) with execution counts
+queries
+| where timestamp > ago(7d)
+| where DurationMs > 5000
+| summarize 
+    Count = count(),
+    AvgDuration = round(avg(DurationMs), 0),
+    MaxDuration = max(DurationMs)
+    by ItemName, QueryPreview = substring(QueryText, 0, 150)
+| order by AvgDuration desc
+| take 10
+
+# -----------------------------------------------------------------------------
+# Exercise 4.3.3: Storage Engine vs Formula Engine Analysis
+# -----------------------------------------------------------------------------
+# Analyze where query time is spent (SE = good, FE = needs optimization)
+
+// SE vs FE analysis by semantic model
+queries
+| where timestamp > ago(7d)
+| where DurationMs > 1000
+| extend 
+    SEPercent = round(100.0 * StorageEngineDurationMs / DurationMs, 1),
+    FEPercent = round(100.0 * FormulaEngineDurationMs / DurationMs, 1)
+| summarize 
+    AvgSE = round(avg(SEPercent), 1),
+    AvgFE = round(avg(FEPercent), 1),
+    Count = count()
+    by ItemName
+| order by AvgFE desc
+
+# Interpretation:
+# SE% > 80% = Efficient (good VertiPaq usage)
+# FE% 20-50% = Mixed (review DAX patterns)
+# FE% > 50% = FE-heavy (optimization needed)
+
+# -----------------------------------------------------------------------------
+# Exercise 4.4.1: Top Users Analysis
+# -----------------------------------------------------------------------------
+# Find the most active users querying your semantic models
+
+// Top users by query count
+queries
+| where timestamp > ago(7d)
+| summarize 
+    QueryCount = count(),
+    AvgDuration = round(avg(DurationMs), 0),
+    TotalCpuMs = sum(CpuTimeMs),
+    UniqueModels = dcount(ItemName)
+    by ExecutingUser
+| order by QueryCount desc
+| take 20
+
+# -----------------------------------------------------------------------------
+# Exercise 4.4.2: Application Breakdown
+# -----------------------------------------------------------------------------
+# See which applications are querying your models
+
+// Queries by application
+queries
+| where timestamp > ago(7d)
+| summarize 
+    QueryCount = count(),
+    AvgDuration = round(avg(DurationMs), 0),
+    UniqueUsers = dcount(ExecutingUser)
+    by Application
+| order by QueryCount desc
+
+# Application values:
+# "Microsoft Power BI" = Power BI Service (web)
+# "Power BI Desktop" = Desktop development
+# "Microsoft Excel" = Analyze in Excel
+# "XMLA" = Third-party tools, scripts
+
+# -----------------------------------------------------------------------------
+# Exercise 4.5: Hourly Usage Pattern
+# -----------------------------------------------------------------------------
+# Identify peak usage times
+
+// Queries by hour of day
+queries
+| where timestamp > ago(7d)
+| extend HourOfDay = datetime_part("hour", timestamp)
+| summarize 
+    QueryCount = count(),
+    AvgDuration = round(avg(DurationMs), 0),
+    UniqueUsers = dcount(ExecutingUser)
+    by HourOfDay
+| order by HourOfDay asc
+
+# -----------------------------------------------------------------------------
+# Additional: Comprehensive Performance Dashboard Query
+# -----------------------------------------------------------------------------
+# Use this for a complete overview
+
+// Comprehensive performance summary
+queries
+| where timestamp > ago(24h)
+| summarize 
+    TotalQueries = count(),
+    SuccessfulQueries = countif(Status == "Success"),
+    FailedQueries = countif(Status != "Success"),
+    AvgDurationMs = avg(DurationMs),
+    P50Duration = percentile(DurationMs, 50),
+    P90Duration = percentile(DurationMs, 90),
+    P99Duration = percentile(DurationMs, 99),
+    MaxDuration = max(DurationMs),
+    TotalCpuMs = sum(CpuTimeMs),
+    UniqueUsers = dcount(ExecutingUser),
+    TotalRowsReturned = sum(RowCount)
+| extend 
+    SuccessRate = round(100.0 * SuccessfulQueries / TotalQueries, 2),
+    AvgDurationSeconds = round(AvgDurationMs / 1000.0, 2)
+
+# -----------------------------------------------------------------------------
+# Additional: Error Analysis
+# -----------------------------------------------------------------------------
+# Analyze query failures
+
+// Query errors by type
+queries
+| where timestamp > ago(7d)
+| where Status != "Success"
+| summarize 
+    ErrorCount = count(),
+    AffectedUsers = dcount(ExecutingUser),
+    FirstOccurrence = min(timestamp),
+    LastOccurrence = max(timestamp)
+    by StatusCode, ItemName
+| extend 
+    ErrorType = case(
+        StatusCode == 400, "Bad Request - Query syntax error",
+        StatusCode == 401, "Unauthorized - Permission issue",
+        StatusCode == 403, "Forbidden - Access denied",
+        StatusCode == 408, "Timeout - Query took too long",
+        StatusCode == 429, "Too Many Requests - Rate limited",
+        StatusCode == 500, "Internal Error - Model issue",
+        StatusCode == 503, "Service Unavailable",
+        strcat("Unknown error: ", tostring(StatusCode)))
+| order by ErrorCount desc
+
+# -----------------------------------------------------------------------------
+# Additional: Semantic Model Health Score
+# -----------------------------------------------------------------------------
+# Calculate a health score for each model
+
+// Health score calculation
+queries
+| where timestamp > ago(7d)
+| summarize 
+    TotalQueries = count(),
+    FailedQueries = countif(Status != "Success"),
+    SlowQueries = countif(DurationMs > 5000),
+    VerySlowQueries = countif(DurationMs > 10000),
+    AvgDuration = avg(DurationMs),
+    P90Duration = percentile(DurationMs, 90)
+    by ItemId, ItemName
+| extend 
+    FailureRate = round(100.0 * FailedQueries / TotalQueries, 2),
+    SlowQueryRate = round(100.0 * SlowQueries / TotalQueries, 2),
+    HealthScore = round(100 
+        - (FailureRate * 2)
+        - (SlowQueryRate * 0.5)
+        - case(AvgDuration > 5000, 20,
+               AvgDuration > 3000, 10,
+               AvgDuration > 1000, 5,
+               0), 1)
+| project ItemName, TotalQueries, FailureRate, SlowQueryRate, AvgDuration, HealthScore
+| order by HealthScore asc
+
+# -----------------------------------------------------------------------------
+# Additional: Real-time Monitoring (Last 15 Minutes)
+# -----------------------------------------------------------------------------
+# Monitor recent query activity
+
+// Real-time monitoring
+queries
+| where timestamp > ago(15m)
+| project 
+    timestamp,
+    ExecutingUser,
+    ItemName,
+    DurationMs,
+    Status,
+    Application,
+    QueryPreview = substring(QueryText, 0, 100)
+| order by timestamp desc
+| take 50
