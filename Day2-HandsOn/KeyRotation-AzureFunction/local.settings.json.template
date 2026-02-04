@@ -1,0 +1,24 @@
+{
+    "IsEncrypted": false,
+    "Values": {
+        "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+        "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+
+        "// Service Principal Configuration": "-------------------------",
+        "ServicePrincipal__ApplicationId": "<your-application-client-id>",
+        "ServicePrincipal__ObjectId": "<your-application-object-id>",
+        "ServicePrincipal__TenantId": "<your-tenant-id>",
+        "ServicePrincipal__DisplayName": "<your-service-principal-name>",
+
+        "// Fabric Configuration": "-------------------------",
+        "Fabric__WorkspaceId": "<your-fabric-workspace-id>",
+        "Fabric__DatabricksUrl": "https://adb-<workspace-id>.<region>.azuredatabricks.net/",
+
+        "// Key Vault Configuration": "-------------------------",
+        "KeyVault__VaultUri": "https://<your-keyvault-name>.vault.azure.net/",
+        "KeyVault__SecretName": "<your-secret-name>",
+
+        "// Secret Validity in Days": "-------------------------",
+        "SecretValidityDays": "90"
+    }
+}

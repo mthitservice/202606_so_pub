@@ -1,0 +1,33 @@
+# gitignore for Fabric Workshop Repository
+
+# Build outputs
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+
+# IDE files
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Azure Functions local settings (may contain secrets)
+local.settings.json
+
+# Logs
+*.log
+logs/
+
+# CSV exports (may contain sensitive data)
+*.csv
+
+# Temporary files
+*.tmp
+*.temp
+~$*
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,32 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Day2-HandsOn", "Day2-HandsOn", "{7CF122AE-DC62-BF6E-2736-1A6022114D0F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "KeyRotation-AzureFunction", "KeyRotation-AzureFunction", "{5A7E6779-213E-A29D-8DE2-722AD917B231}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeyRotation", "Day2-HandsOn\KeyRotation-AzureFunction\KeyRotation.csproj", "{56A4B181-8605-429A-4889-8A1EC2C32D03}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{56A4B181-8605-429A-4889-8A1EC2C32D03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56A4B181-8605-429A-4889-8A1EC2C32D03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56A4B181-8605-429A-4889-8A1EC2C32D03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56A4B181-8605-429A-4889-8A1EC2C32D03}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5A7E6779-213E-A29D-8DE2-722AD917B231} = {7CF122AE-DC62-BF6E-2736-1A6022114D0F}
+		{56A4B181-8605-429A-4889-8A1EC2C32D03} = {5A7E6779-213E-A29D-8DE2-722AD917B231}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {87B82B76-622A-47D5-AE86-4B87E459799D}
+	EndGlobalSection
+EndGlobal
